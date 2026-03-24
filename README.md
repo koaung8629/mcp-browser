@@ -39,6 +39,11 @@ npm run build
 google-chrome --remote-debugging-port=9222 --no-first-run
 ```
 
+> **Important:** Chrome must be started fresh — if it's already running, the CDP flag is ignored. Either quit Chrome first, or use a separate profile:
+> ```bash
+> "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 --no-first-run --user-data-dir="/tmp/chrome-cdp-profile"
+> ```
+
 ### 3. Add MCP config
 
 Add this to your MCP client config. Replace `/path/to/browser-mcp-proxy` with the actual path.
@@ -68,18 +73,25 @@ claude mcp add browser-proxy node /path/to/browser-mcp-proxy/dist/index.js
 | Tool | Description |
 |---|---|
 | `web_search` | Search Google/DuckDuckGo via the browser. Returns `{title, url, snippet}[]` |
-| `fetch_page` | Load a URL and return the full page as Markdown |
-| `fetch_readable` | Load a URL and extract only the main content (article) as clean Markdown |
+| `fetch_page` | Load a URL, clean noise (nav, ads, sidebars), and return the page as Markdown |
 | `browser_status` | Check if the browser connection is active |
 
 ## Usage Examples
 
 Once configured, just use natural language with your LLM:
 
-- **"Search for the latest Node.js release notes"** — calls `web_search`, then `fetch_readable` on the top results
-- **"Read this page and summarize it: https://example.com/article"** — calls `fetch_readable`
+- **"Search for the latest Node.js release notes"** — calls `web_search`, then `fetch_page` on the top results
+- **"Read this page and summarize it: https://example.com/article"** — calls `fetch_page`
 - **"Compare the pricing on these two pages"** — calls `fetch_page` on both URLs
 - **"Is the browser connected?"** — calls `browser_status`
+
+## Features
+
+- **Anti-bot detection**: Hides the `navigator.webdriver` flag to bypass bot checks
+- **Cookie/consent dismissal**: Automatically clicks "Accept cookies" overlays (Reddit, GDPR, OneTrust, CookieBot, etc.)
+- **DOM cleaning**: Strips navigation, sidebars, footers, ads, and action links before extraction
+- **URL rewriting**: Redirects SPAs to scraping-friendly versions (e.g. `reddit.com` → `old.reddit.com`)
+- **Google → DuckDuckGo fallback**: If Google shows a CAPTCHA, search falls back to DuckDuckGo automatically
 
 ## Environment Variables
 
