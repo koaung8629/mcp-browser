@@ -6,8 +6,8 @@
 
 MCP server that lets AI assistants browse the web through your real Chrome — with your cookies, sessions, and fingerprint. No bot detection. No CAPTCHAs.
 
-[![npm version](https://img.shields.io/npm/v/mcp-browser.svg)](https://www.npmjs.com/package/mcp-browser)
-[![npm downloads](https://img.shields.io/npm/dm/mcp-browser.svg)](https://www.npmjs.com/package/mcp-browser)
+[![npm version](https://img.shields.io/npm/v/mcp-browser.svg)](https://www.npmjs.com/package/@wgarrido/mcp-browser)
+[![npm downloads](https://img.shields.io/npm/dm/mcp-browser.svg)](https://www.npmjs.com/package/@wgarrido/mcp-browser)
 [![license](https://img.shields.io/npm/l/mcp-browser.svg)](LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/wgarrido/mcp-browser/ci.yml?label=CI)](https://github.com/wgarrido/mcp-browser/actions)
 
@@ -28,7 +28,7 @@ Add to `~/.config/claude/claude_desktop_config.json` (Mac/Linux) or `%APPDATA%\C
   "mcpServers": {
     "browser": {
       "command": "npx",
-      "args": ["-y", "mcp-browser"],
+      "args": ["-y", "@wgarrido/mcp-browser"],
       "env": {
         "CHROME_HEADLESS": "true"
       }
@@ -40,7 +40,7 @@ Add to `~/.config/claude/claude_desktop_config.json` (Mac/Linux) or `%APPDATA%\C
 ### Claude Code (CLI)
 
 ```bash
-claude mcp add browser -- npx -y mcp-browser
+claude mcp add browser -- npx -y @wgarrido/mcp-browser
 ```
 
 ### VS Code / Cursor
@@ -52,7 +52,7 @@ Add to `.vscode/mcp.json` in your project:
   "servers": {
     "browser": {
       "command": "npx",
-      "args": ["-y", "mcp-browser"],
+      "args": ["-y", "@wgarrido/mcp-browser"],
       "env": {
         "CHROME_HEADLESS": "true"
       }
@@ -166,7 +166,7 @@ Or use the included scripts:
   "mcpServers": {
     "browser": {
       "command": "npx",
-      "args": ["-y", "mcp-browser"],
+      "args": ["-y", "@wgarrido/mcp-browser"],
       "env": {
         "CDP_URL": "http://localhost:9222"
       }
@@ -203,7 +203,7 @@ All settings are optional. Pass them via `env` in your MCP config:
   "mcpServers": {
     "browser": {
       "command": "npx",
-      "args": ["-y", "mcp-browser"],
+      "args": ["-y", "@wgarrido/mcp-browser"],
       "env": {
         "CHROME_HEADLESS": "true",
         "SEARCH_ENGINE": "duckduckgo",
