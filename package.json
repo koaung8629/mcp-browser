@@ -1,17 +1,45 @@
 {
-  "name": "browser-mcp-proxy",
+  "name": "mcp-browser",
   "version": "2.0.0",
-  "description": "MCP server that proxies web requests through the user's real Chrome browser via CDP",
+  "description": "MCP server that gives AI assistants access to a real Chrome browser — with your cookies, sessions, and fingerprint",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wgarrido/mcp-browser.git"
+  },
+  "homepage": "https://github.com/wgarrido/mcp-browser#readme",
+  "bugs": "https://github.com/wgarrido/mcp-browser/issues",
+  "keywords": [
+    "mcp",
+    "browser",
+    "chrome",
+    "cdp",
+    "puppeteer",
+    "model-context-protocol",
+    "claude",
+    "ai-tools",
+    "web-scraping",
+    "automation"
+  ],
   "main": "dist/index.js",
   "bin": {
-    "browser-mcp-proxy": "dist/index.js"
+    "mcp-browser": "dist/index.js"
   },
+  "files": [
+    "dist/",
+    "scripts/launch-chrome.sh",
+    "scripts/launch-chrome.ps1",
+    "README.md",
+    "LICENSE"
+  ],
   "engines": {
     "node": ">=18"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",
+    "postbuild": "node -e \"try{require('fs').chmodSync('dist/index.js',0o755)}catch{}\"",
+    "prepublishOnly": "npm run build",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js"
   },

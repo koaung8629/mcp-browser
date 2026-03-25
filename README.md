@@ -1,72 +1,34 @@
-# Browser MCP Proxy
+<div align="center">
 
-MCP server that routes web requests through your real Chrome browser via CDP (Chrome DevTools Protocol). This lets LLMs browse the web as you — with your cookies, sessions, and browser fingerprint — avoiding anti-bot blocks.
+# MCP Browser
 
-## Quick Start
+**Give your AI a real browser.**
 
-### 1. Install & build
+MCP server that lets AI assistants browse the web through your real Chrome — with your cookies, sessions, and fingerprint. No bot detection. No CAPTCHAs.
 
-```bash
-git clone <repo-url> browser-mcp-proxy
-cd browser-mcp-proxy
-npm install
-npm run build
-```
+[![npm version](https://img.shields.io/npm/v/mcp-browser.svg)](https://www.npmjs.com/package/mcp-browser)
+[![npm downloads](https://img.shields.io/npm/dm/mcp-browser.svg)](https://www.npmjs.com/package/mcp-browser)
+[![license](https://img.shields.io/npm/l/mcp-browser.svg)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/wgarrido/mcp-browser/ci.yml?label=CI)](https://github.com/wgarrido/mcp-browser/actions)
 
-### 2. Launch Chrome with CDP
+</div>
 
-**Option A — Headless (recommended, Chrome stays in background):**
+---
 
-Set `CHROME_HEADLESS=true` in your MCP config (see step 3) and skip this step entirely. The server will auto-launch Chrome in headless mode — no visible window, no Dock icon.
+## Quick Start (30 seconds)
 
-Or launch manually in headless mode:
-```bash
-./scripts/launch-chrome.sh --headless
-```
+No installation needed. Just add the config to your MCP client:
 
-**Option B — Visible Chrome (uses your existing sessions/cookies):**
+### Claude Desktop
 
-```bash
-./scripts/launch-chrome.sh
-```
+Add to `~/.config/claude/claude_desktop_config.json` (Mac/Linux) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
-**Windows (PowerShell):**
-```powershell
-# Headless
-.\scripts\launch-chrome.ps1 -Headless
-
-# Visible
-.\scripts\launch-chrome.ps1
-```
-
-**Or manually:**
-```bash
-# Mac (headless)
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 --no-first-run --headless=new
-
-# Mac (visible)
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 --no-first-run
-
-# Linux (headless)
-google-chrome --remote-debugging-port=9222 --no-first-run --headless=new
-```
-
-> **Note:** When using visible mode, Chrome must be started fresh — if it's already running, the CDP flag is ignored. Either quit Chrome first, or use a separate profile:
-> ```bash
-> "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 --no-first-run --user-data-dir="/tmp/chrome-cdp-profile"
-> ```
-
-### 3. Add MCP config
-
-Add this to your MCP client config. Replace `/path/to/browser-mcp-proxy` with the actual path.
-
-**Claude Code (`claude_desktop_config.json`):**
 ```json
 {
   "mcpServers": {
-    "browser-proxy": {
-      "command": "node",
-      "args": ["/path/to/browser-mcp-proxy/dist/index.js"],
+    "browser": {
+      "command": "npx",
+      "args": ["-y", "mcp-browser"],
       "env": {
         "CHROME_HEADLESS": "true"
       }
@@ -75,139 +37,242 @@ Add this to your MCP client config. Replace `/path/to/browser-mcp-proxy` with th
 }
 ```
 
-**Cursor / VS Code (`.vscode/mcp.json` already included):**
-Open the project in VS Code — the `.vscode/mcp.json` config is ready.
+### Claude Code (CLI)
 
-**Claude Code CLI:**
 ```bash
-claude mcp add browser-proxy node /path/to/browser-mcp-proxy/dist/index.js
+claude mcp add browser -- npx -y mcp-browser
 ```
 
-## Available Tools
+### VS Code / Cursor
 
-### Core
+Add to `.vscode/mcp.json` in your project:
 
-| Tool | Description |
-|---|---|
-| `fetch_page` | Load a URL and return the full page content as Markdown |
-| `fetch_readable` | Extract the main article content using Readability (strips navigation, ads, sidebars). Falls back to full content if extraction is too short |
-| `web_search` | Search Google/DuckDuckGo via the browser. Returns `{title, url, snippet}[]` |
-| `screenshot` | Take a PNG screenshot of a page or a specific CSS element |
-| `execute_javascript` | Execute arbitrary JavaScript in the browser context and return the result |
-| `fetch_structured_data` | Extract JSON-LD, OpenGraph, meta tags, tables, headings, and links |
-| `multi_fetch` | Fetch up to 5 URLs in parallel and return their content as Markdown |
-| `extract_links` | Extract all links from a page with optional regex filtering |
-| `crawl` | Crawl a website following links up to a max depth/pages, with optional content extraction |
-| `browser_status` | Check if the browser connection is active |
-
-### Persistent Sessions
-
-Open long-lived browser tabs for multi-step workflows (login, form filling, navigation chains).
-
-| Tool | Description |
-|---|---|
-| `open_tab` | Open a new persistent tab, returns a `tab_id` |
-| `close_tab` | Close a persistent tab by `tab_id` |
-| `click_and_navigate` | Interact with a tab: click, type, select, submit, scroll |
-| `list_tabs` | List all open browser tabs |
-| `monitor_page` | Monitor a page for content changes (start/check/stop/list) |
-
-Most tools accept an optional `tab_id` parameter to reuse a persistent session instead of opening a new ephemeral page. This is useful for sites that require authentication or multi-step interactions.
-
-## Usage Examples
-
-Once configured, just use natural language with your LLM:
-
-- **"Search for the latest Node.js release notes"** — calls `web_search`, then `fetch_page` on the top results
-- **"Read this page and summarize it: https://example.com/article"** — calls `fetch_readable`
-- **"Compare the pricing on these two pages"** — calls `multi_fetch` on both URLs
-- **"Take a screenshot of https://example.com"** — calls `screenshot`
-- **"Open a tab on https://example.com, click the login button, type my credentials"** — uses `open_tab` + `click_and_navigate`
-- **"Extract all links from this page that match /docs/"** — calls `extract_links` with a filter
-- **"Crawl this site 2 levels deep"** — calls `crawl`
-- **"Monitor this page every 30 seconds for changes"** — calls `monitor_page`
-
-## Features
-
-- **Headless mode**: Run Chrome entirely in the background — no visible window, auto-launched by the server
-- **Anti-bot detection**: Hides the `navigator.webdriver` flag to bypass bot checks
-- **Cloudflare challenge handling**: Automatically detects and waits for Cloudflare Turnstile/interstitial pages to resolve (up to 15s)
-- **Cookie/consent dismissal**: Automatically clicks "Accept cookies" overlays (Reddit, GDPR, OneTrust, CookieBot, etc.)
-- **DOM cleaning**: Strips navigation, sidebars, footers, ads, and action links before extraction
-- **URL rewriting**: Redirects SPAs to scraping-friendly versions (e.g. `reddit.com` → `old.reddit.com`)
-- **Google → DuckDuckGo fallback**: If Google shows a CAPTCHA, search falls back to DuckDuckGo automatically
-- **Persistent sessions**: Keep tabs open across multiple tool calls for multi-step workflows
-- **LRU cache**: Caches page content to avoid redundant fetches (configurable TTL)
-- **Concurrency control**: Semaphore limits concurrent browser tabs to prevent resource exhaustion
-- **Multi-profile support**: Connect to multiple Chrome instances via named profiles
-
-## Environment Variables
-
-| Variable | Default | Description |
-|---|---|---|
-| `CDP_URL` | `http://localhost:9222` | Chrome DevTools Protocol endpoint |
-| `DEFAULT_TIMEOUT` | `30000` | Page load timeout (ms) |
-| `MAX_CONTENT_LENGTH` | `50000` | Max content length returned (chars) |
-| `MAX_CONCURRENT_TABS` | `5` | Max simultaneous browser tabs |
-| `CACHE_ENABLED` | `true` | Enable in-memory page cache |
-| `CACHE_TTL` | `300` | Cache time-to-live (seconds) |
-| `SEARCH_ENGINE` | `google` | Default search engine (`google` or `duckduckgo`) |
-| `LOG_LEVEL` | `info` | Log level (`debug`, `info`, `warn`, `error`) |
-| `SESSION_TIMEOUT_MINUTES` | `30` | Auto-close inactive sessions after this duration |
-| `CHROME_HEADLESS` | `false` | Auto-launch Chrome in headless mode (no visible window). No need to launch Chrome manually |
-| `CHROME_PATH` | *(auto-detect)* | Custom path to Chrome/Chromium executable (used with `CHROME_HEADLESS`) |
-| `CHROME_PROFILES` | `{}` | JSON map of profile name → CDP URL (e.g. `{"work":"http://localhost:9223"}`) |
-
-Pass them in the MCP config:
 ```json
 {
-  "mcpServers": {
-    "browser-proxy": {
-      "command": "node",
-      "args": ["/path/to/browser-mcp-proxy/dist/index.js"],
+  "servers": {
+    "browser": {
+      "command": "npx",
+      "args": ["-y", "mcp-browser"],
       "env": {
-        "CHROME_HEADLESS": "true",
-        "SEARCH_ENGINE": "duckduckgo",
-        "DEFAULT_TIMEOUT": "60000",
-        "SESSION_TIMEOUT_MINUTES": "60"
+        "CHROME_HEADLESS": "true"
       }
     }
   }
 }
 ```
 
+That's it. Chrome launches automatically in the background. Start browsing.
+
+---
+
+## Why MCP Browser?
+
+| Problem | How MCP Browser solves it |
+|---|---|
+| Sites block bots and scrapers | Uses your **real Chrome** with your real fingerprint |
+| Cloudflare challenges, CAPTCHAs | **Auto-detects and waits** for challenges to resolve |
+| Content behind login | Your **cookies and sessions** are already there |
+| Noisy HTML (ads, nav, popups) | **Smart DOM cleaning** strips everything but content |
+| Cookie consent banners | **Auto-dismissed** (40+ selector patterns) |
+| SPAs with dynamic content | Runs in a **real browser** — JavaScript executes naturally |
+
+---
+
+## Available Tools (15)
+
+### Core
+
+| Tool | What it does |
+|---|---|
+| `fetch_page` | Load a URL → clean Markdown |
+| `fetch_readable` | Extract main article content (Readability) |
+| `web_search` | Search Google/DuckDuckGo through the browser |
+| `screenshot` | PNG screenshot of a page or CSS element |
+| `execute_javascript` | Run arbitrary JS in the page context |
+| `fetch_structured_data` | Extract JSON-LD, OpenGraph, meta, tables, headings, links |
+| `multi_fetch` | Fetch up to 5 URLs in parallel |
+| `extract_links` | Get all links from a page (with regex filter) |
+| `crawl` | Crawl a site following links (depth/page limits) |
+| `browser_status` | Check browser connection status |
+
+### Persistent Sessions
+
+Keep tabs open across multiple tool calls for multi-step workflows:
+
+| Tool | What it does |
+|---|---|
+| `open_tab` | Open a persistent tab → returns `tab_id` |
+| `close_tab` | Close a tab by `tab_id` |
+| `click_and_navigate` | Interact: click, type, select, submit, scroll |
+| `list_tabs` | List all open tabs |
+| `monitor_page` | Track page changes over time (start/check/stop) |
+
+> Most tools accept an optional `tab_id` to reuse a persistent session instead of opening a new page.
+
+---
+
+## Usage Examples
+
+Just talk naturally to your AI:
+
+- **"Search for the latest Node.js release notes"** → `web_search` + `fetch_page`
+- **"Read and summarize this article: https://..."** → `fetch_readable`
+- **"Compare pricing on these two pages"** → `multi_fetch`
+- **"Take a screenshot of https://..."** → `screenshot`
+- **"Log into this site, then scrape my dashboard"** → `open_tab` + `click_and_navigate` + `fetch_page`
+- **"Extract all /docs/ links from this page"** → `extract_links`
+- **"Crawl this site 2 levels deep"** → `crawl`
+- **"Watch this page for changes every 30 seconds"** → `monitor_page`
+
+---
+
+## Advanced: Use Your Own Chrome Sessions
+
+By default, MCP Browser launches Chrome in **headless mode** (background, no window). This is the simplest setup.
+
+If you want to use your **existing cookies and logged-in sessions**, launch Chrome manually with CDP enabled, then point MCP Browser to it:
+
+### Launch Chrome with CDP
+
+**Mac:**
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --remote-debugging-port=9222 --no-first-run
+```
+
+**Linux:**
+```bash
+google-chrome --remote-debugging-port=9222 --no-first-run
+```
+
+**Windows (PowerShell):**
+```powershell
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" `
+  --remote-debugging-port=9222 --no-first-run
+```
+
+Or use the included scripts:
+```bash
+./scripts/launch-chrome.sh       # Mac/Linux
+.\scripts\launch-chrome.ps1      # Windows
+```
+
+> **Important:** Chrome must be started fresh. If it's already running, the CDP flag is ignored. Quit Chrome first, or use `--user-data-dir="/tmp/chrome-cdp"` for a separate profile.
+
+### Config without headless
+
+```json
+{
+  "mcpServers": {
+    "browser": {
+      "command": "npx",
+      "args": ["-y", "mcp-browser"],
+      "env": {
+        "CDP_URL": "http://localhost:9222"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Configuration
+
+All settings are optional. Pass them via `env` in your MCP config:
+
+| Variable | Default | Description |
+|---|---|---|
+| `CHROME_HEADLESS` | `false` | Auto-launch Chrome in headless mode (recommended) |
+| `CHROME_PATH` | *(auto-detect)* | Custom path to Chrome/Chromium executable |
+| `CDP_URL` | `http://localhost:9222` | Chrome DevTools Protocol endpoint |
+| `DEFAULT_TIMEOUT` | `30000` | Page load timeout in ms |
+| `MAX_CONTENT_LENGTH` | `50000` | Max returned content in characters |
+| `MAX_CONCURRENT_TABS` | `5` | Max simultaneous browser tabs |
+| `CACHE_ENABLED` | `true` | Enable in-memory page cache |
+| `CACHE_TTL` | `300` | Cache time-to-live in seconds |
+| `SEARCH_ENGINE` | `google` | `google` or `duckduckgo` |
+| `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
+| `SESSION_TIMEOUT_MINUTES` | `30` | Auto-close inactive tabs after this duration |
+| `CHROME_PROFILES` | `{}` | JSON map of profile name → CDP URL |
+
+**Example with custom settings:**
+
+```json
+{
+  "mcpServers": {
+    "browser": {
+      "command": "npx",
+      "args": ["-y", "mcp-browser"],
+      "env": {
+        "CHROME_HEADLESS": "true",
+        "SEARCH_ENGINE": "duckduckgo",
+        "DEFAULT_TIMEOUT": "60000",
+        "MAX_CONTENT_LENGTH": "100000"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Features
+
+- **Headless mode** — Chrome runs in the background, auto-launched by the server
+- **Anti-bot stealth** — Hides `navigator.webdriver`, fakes plugins, languages, and permissions
+- **Cloudflare handling** — Detects Turnstile/interstitial challenges and waits up to 15s for resolution
+- **Cookie banner dismissal** — Auto-clicks consent overlays (GDPR, OneTrust, CookieBot, Reddit, 40+ patterns)
+- **Smart DOM cleaning** — Strips nav, sidebars, footers, ads, modals, and action links
+- **URL rewriting** — Redirects SPAs to scraping-friendly versions (e.g. `reddit.com` → `old.reddit.com`)
+- **Google → DuckDuckGo fallback** — If Google shows a CAPTCHA, search falls back automatically
+- **Persistent sessions** — Keep tabs open for multi-step workflows (login, forms, navigation chains)
+- **LRU cache** — Avoids redundant fetches with configurable TTL
+- **Concurrency control** — Semaphore limits concurrent tabs to prevent resource exhaustion
+- **Multi-profile support** — Connect to multiple Chrome instances via named profiles
+
+---
+
 ## Troubleshooting
 
 **"Cannot connect to Chrome"**
-Chrome must be running with `--remote-debugging-port=9222`. Use the provided launch scripts or start it manually.
+Chrome must be running with `--remote-debugging-port=9222`, or set `CHROME_HEADLESS=true` for auto-launch.
 
 **"Port 9222 already in use"**
-Another Chrome instance is already using CDP on that port. Close it or use a different port:
+Another Chrome instance is using CDP. Close it or use a different port:
 ```bash
 ./scripts/launch-chrome.sh 9333
 ```
 Then set `CDP_URL=http://localhost:9333`.
 
 **"Page timeout"**
-Some pages are slow. Increase the timeout:
-```json
-{ "env": { "DEFAULT_TIMEOUT": "60000" } }
-```
+Increase the timeout: `"DEFAULT_TIMEOUT": "60000"`
 
 **"Empty results from web_search"**
-Google may show a CAPTCHA. Try switching to DuckDuckGo:
-```json
-{ "env": { "SEARCH_ENGINE": "duckduckgo" } }
-```
+Google may show a CAPTCHA. Switch to DuckDuckGo: `"SEARCH_ENGINE": "duckduckgo"`
 
 **"Cloudflare challenge page"**
-The server automatically waits up to 15s for Cloudflare challenges to resolve. If the site requires manual verification, use `open_tab` to create a persistent session, solve the challenge in Chrome, then use the `tab_id` with other tools.
+The server auto-waits up to 15s for Cloudflare challenges. If it needs manual verification, use `open_tab` to create a persistent session, solve it in Chrome, then use the `tab_id` with other tools.
+
+---
+
+## Development
+
+```bash
+git clone https://github.com/wgarrido/mcp-browser.git
+cd mcp-browser
+npm install
+npm run dev    # Run with hot reload
+npm run build  # Build for production
+```
+
+---
 
 ## Requirements
 
 - Node.js 18+
-- Google Chrome (or Chromium)
+- Google Chrome or Chromium
 
 ## License
 
-MIT
+[MIT](LICENSE)

@@ -104,6 +104,31 @@ async function searchGoogle(
   );
 }
 
+/** Adapt a Google-style query for DuckDuckGo by converting unsupported operators */
+function adaptQueryForDuckDuckGo(query: string): string {
+  let adapted = query;
+
+  // inurl:xxx → just include the term (DDG doesn't support inurl:)
+  adapted = adapted.replace(/inurl:(\S+)/gi, "$1");
+
+  // cache:url → just the URL
+  adapted = adapted.replace(/cache:(\S+)/gi, "$1");
+
+  // related:url → just the URL
+  adapted = adapted.replace(/related:(\S+)/gi, "$1");
+
+  // info:url → just the URL
+  adapted = adapted.replace(/info:(\S+)/gi, "$1");
+
+  // before:YYYY-MM-DD / after:YYYY-MM-DD → remove (DDG doesn't support date operators)
+  adapted = adapted.replace(/(?:before|after):\S+/gi, "");
+
+  // Clean up extra whitespace
+  adapted = adapted.replace(/\s{2,}/g, " ").trim();
+
+  return adapted;
+}
+
 async function searchDuckDuckGo(
   browser: BrowserManager,
   query: string,
@@ -176,14 +201,17 @@ export function register(server: McpServer, browser: BrowserManager, ctx: ToolCo
         let results: SearchResult[];
 
         if (searchEngine === "duckduckgo") {
-          results = await searchDuckDuckGo(browser, query, maxResults, timeout, logger);
+          const adaptedQuery = adaptQueryForDuckDuckGo(query);
+          results = await searchDuckDuckGo(browser, adaptedQuery, maxResults, timeout, logger);
         } else {
           // Google with DuckDuckGo fallback
           try {
             results = await searchGoogle(browser, query, maxResults, timeout, logger);
           } catch (googleError) {
-            logger.warn(`Google search failed, falling back to DuckDuckGo: ${googleError}`);
-            results = await searchDuckDuckGo(browser, query, maxResults, timeout, logger);
+            const adaptedQuery = adaptQueryForDuckDuckGo(query);
+            const queryNote = adaptedQuery !== query ? ` (query adapted: "${adaptedQuery}")` : "";
+            logger.warn(`Google search failed, falling back to DuckDuckGo: ${googleError}${queryNote}`);
+            results = await searchDuckDuckGo(browser, adaptedQuery, maxResults, timeout, logger);
           }
         }
 

@@ -1,0 +1,9 @@
+src/
+tsconfig.json
+.vscode/
+.claude/
+.github/
+*.tsbuildinfo
+.DS_Store
+CLAUDE.md
+PLAN_BROWSER_MCP_PROXY.md
