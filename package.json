@@ -1,6 +1,6 @@
 {
   "name": "@wgarrido/mcp-browser",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "MCP server that gives AI assistants access to a real Chrome browser — with your cookies, sessions, and fingerprint",
   "type": "module",
   "license": "MIT",
