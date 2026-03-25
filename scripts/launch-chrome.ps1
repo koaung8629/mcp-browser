@@ -1,7 +1,10 @@
 # Launch Chrome with Chrome DevTools Protocol (CDP) enabled
 # This allows browser-mcp-proxy to connect and control the browser
 
-param([int]$Port = 9222)
+param(
+    [int]$Port = 9222,
+    [switch]$Headless
+)
 
 $chromePaths = @(
     "C:\Program Files\Google\Chrome\Application\chrome.exe",
@@ -30,8 +33,14 @@ if ($portInUse) {
     exit 0
 }
 
-Write-Host "Launching Chrome with CDP on port $Port..."
-Start-Process $chromePath -ArgumentList "--remote-debugging-port=$Port", "--no-first-run"
+$chromeArgs = @("--remote-debugging-port=$Port", "--no-first-run")
+if ($Headless) {
+    $chromeArgs += "--headless=new"
+    Write-Host "Launching Chrome in headless mode with CDP on port $Port..."
+} else {
+    Write-Host "Launching Chrome with CDP on port $Port..."
+}
+Start-Process $chromePath -ArgumentList $chromeArgs
 Write-Host ""
 Write-Host "Chrome launched. You can now start browser-mcp-proxy."
 Write-Host "To verify: curl http://localhost:${Port}/json/version"

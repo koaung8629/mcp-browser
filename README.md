@@ -15,31 +15,43 @@ npm run build
 
 ### 2. Launch Chrome with CDP
 
-**Mac:**
+**Option A — Headless (recommended, Chrome stays in background):**
+
+Set `CHROME_HEADLESS=true` in your MCP config (see step 3) and skip this step entirely. The server will auto-launch Chrome in headless mode — no visible window, no Dock icon.
+
+Or launch manually in headless mode:
 ```bash
-./scripts/launch-chrome.sh
+./scripts/launch-chrome.sh --headless
 ```
 
-**Linux:**
+**Option B — Visible Chrome (uses your existing sessions/cookies):**
+
 ```bash
 ./scripts/launch-chrome.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
+# Headless
+.\scripts\launch-chrome.ps1 -Headless
+
+# Visible
 .\scripts\launch-chrome.ps1
 ```
 
 **Or manually:**
 ```bash
-# Mac
+# Mac (headless)
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 --no-first-run --headless=new
+
+# Mac (visible)
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 --no-first-run
 
-# Linux
-google-chrome --remote-debugging-port=9222 --no-first-run
+# Linux (headless)
+google-chrome --remote-debugging-port=9222 --no-first-run --headless=new
 ```
 
-> **Important:** Chrome must be started fresh — if it's already running, the CDP flag is ignored. Either quit Chrome first, or use a separate profile:
+> **Note:** When using visible mode, Chrome must be started fresh — if it's already running, the CDP flag is ignored. Either quit Chrome first, or use a separate profile:
 > ```bash
 > "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 --no-first-run --user-data-dir="/tmp/chrome-cdp-profile"
 > ```
@@ -54,7 +66,10 @@ Add this to your MCP client config. Replace `/path/to/browser-mcp-proxy` with th
   "mcpServers": {
     "browser-proxy": {
       "command": "node",
-      "args": ["/path/to/browser-mcp-proxy/dist/index.js"]
+      "args": ["/path/to/browser-mcp-proxy/dist/index.js"],
+      "env": {
+        "CHROME_HEADLESS": "true"
+      }
     }
   }
 }
@@ -114,6 +129,7 @@ Once configured, just use natural language with your LLM:
 
 ## Features
 
+- **Headless mode**: Run Chrome entirely in the background — no visible window, auto-launched by the server
 - **Anti-bot detection**: Hides the `navigator.webdriver` flag to bypass bot checks
 - **Cloudflare challenge handling**: Automatically detects and waits for Cloudflare Turnstile/interstitial pages to resolve (up to 15s)
 - **Cookie/consent dismissal**: Automatically clicks "Accept cookies" overlays (Reddit, GDPR, OneTrust, CookieBot, etc.)
@@ -138,6 +154,8 @@ Once configured, just use natural language with your LLM:
 | `SEARCH_ENGINE` | `google` | Default search engine (`google` or `duckduckgo`) |
 | `LOG_LEVEL` | `info` | Log level (`debug`, `info`, `warn`, `error`) |
 | `SESSION_TIMEOUT_MINUTES` | `30` | Auto-close inactive sessions after this duration |
+| `CHROME_HEADLESS` | `false` | Auto-launch Chrome in headless mode (no visible window). No need to launch Chrome manually |
+| `CHROME_PATH` | *(auto-detect)* | Custom path to Chrome/Chromium executable (used with `CHROME_HEADLESS`) |
 | `CHROME_PROFILES` | `{}` | JSON map of profile name → CDP URL (e.g. `{"work":"http://localhost:9223"}`) |
 
 Pass them in the MCP config:
@@ -148,6 +166,7 @@ Pass them in the MCP config:
       "command": "node",
       "args": ["/path/to/browser-mcp-proxy/dist/index.js"],
       "env": {
+        "CHROME_HEADLESS": "true",
         "SEARCH_ENGINE": "duckduckgo",
         "DEFAULT_TIMEOUT": "60000",
         "SESSION_TIMEOUT_MINUTES": "60"

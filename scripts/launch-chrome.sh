@@ -1,9 +1,20 @@
 #!/bin/bash
 # Launch Chrome with Chrome DevTools Protocol (CDP) enabled
 # This allows browser-mcp-proxy to connect and control the browser
+#
+# Usage: ./launch-chrome.sh [PORT] [--headless]
 
 PORT="${1:-9222}"
+HEADLESS=""
 CHROME_PATH=""
+
+# Parse arguments
+for arg in "$@"; do
+    case "$arg" in
+        --headless) HEADLESS="--headless=new" ;;
+        [0-9]*) PORT="$arg" ;;
+    esac
+done
 
 # Auto-detect Chrome path
 if [ "$(uname)" = "Darwin" ]; then
@@ -31,8 +42,13 @@ if lsof -i :"$PORT" &> /dev/null; then
     exit 0
 fi
 
-echo "Launching Chrome with CDP on port $PORT..."
-"$CHROME_PATH" --remote-debugging-port="$PORT" --no-first-run &
+if [ -n "$HEADLESS" ]; then
+    echo "Launching Chrome in headless mode with CDP on port $PORT..."
+    "$CHROME_PATH" --remote-debugging-port="$PORT" --no-first-run $HEADLESS &
+else
+    echo "Launching Chrome with CDP on port $PORT..."
+    "$CHROME_PATH" --remote-debugging-port="$PORT" --no-first-run &
+fi
 echo "Chrome launched (PID: $!)"
 echo ""
 echo "You can now start browser-mcp-proxy."

@@ -1,5 +1,31 @@
 import puppeteer, { type Browser, type Page } from "puppeteer-core";
+import { existsSync } from "fs";
 import { type Config, type Logger } from "./config.js";
+
+const DEFAULT_CHROME_PATHS: Record<string, string[]> = {
+  darwin: [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+  ],
+  linux: [
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/chromium-browser",
+    "/usr/bin/chromium",
+  ],
+  win32: [
+    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+  ],
+};
+
+function detectChromePath(): string | null {
+  const paths = DEFAULT_CHROME_PATHS[process.platform] ?? [];
+  for (const p of paths) {
+    if (existsSync(p)) return p;
+  }
+  return null;
+}
 
 class Semaphore {
   private count: number;
@@ -84,7 +110,9 @@ export class BrowserManager {
       return this.connectingPromise;
     }
 
-    this.connectingPromise = this.doConnect(this.config.cdpUrl);
+    this.connectingPromise = this.config.headless
+      ? this.doLaunch()
+      : this.doConnect(this.config.cdpUrl);
     try {
       const b = await this.connectingPromise;
       this.browser = b;
@@ -156,12 +184,101 @@ export class BrowserManager {
     }
   }
 
+  private async doLaunch(): Promise<Browser> {
+    const chromePath = this.config.chromePath || detectChromePath();
+    if (!chromePath) {
+      throw new Error(
+        "Cannot find Chrome. Set CHROME_PATH to your Chrome/Chromium executable."
+      );
+    }
+
+    this.logger.info(`Launching Chrome in headless mode (${chromePath})...`);
+
+    const browser = await puppeteer.launch({
+      executablePath: chromePath,
+      headless: "shell",
+      args: [
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--disable-background-timer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-renderer-backgrounding",
+        // Anti-detection flags
+        "--disable-blink-features=AutomationControlled",
+        "--disable-features=IsolateOrigins,site-per-process",
+        "--disable-infobars",
+        "--window-size=1920,1080",
+        "--start-maximized",
+        "--lang=en-US,en",
+      ],
+    });
+
+    const version = await browser.version();
+    this.logger.info(`Launched headless Chrome: ${version}`);
+    return browser;
+  }
+
   /** Apply anti-bot measures to a page (hide webdriver flag, etc.) */
   async setupPage(page: Page, options?: { timeout?: number }): Promise<void> {
+    // Set a realistic user-agent (headless Chrome has a tell-tale "HeadlessChrome" UA)
+    if (this.config.headless) {
+      await page.setUserAgent(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+      );
+      await page.setViewport({ width: 1920, height: 1080 });
+    }
+
     await page.evaluateOnNewDocument(() => {
+      // Hide webdriver flag
       Object.defineProperty(navigator, "webdriver", {
         get: () => false,
       });
+
+      // Fake plugins array (headless has none)
+      Object.defineProperty(navigator, "plugins", {
+        get: () => [1, 2, 3, 4, 5],
+      });
+
+      // Fake languages
+      Object.defineProperty(navigator, "languages", {
+        get: () => ["en-US", "en"],
+      });
+
+      // Spoof chrome runtime object (missing in headless)
+      const w = window as Record<string, unknown>;
+      if (!w.chrome) {
+        w.chrome = {};
+      }
+      const chrome = w.chrome as Record<string, unknown>;
+      if (!chrome.runtime) {
+        chrome.runtime = {};
+      }
+
+      // Fake permissions query to avoid headless detection
+      const originalQuery = window.navigator.permissions.query.bind(
+        window.navigator.permissions
+      );
+      window.navigator.permissions.query = (parameters: PermissionDescriptor) =>
+        parameters.name === "notifications"
+          ? Promise.resolve({
+              state: Notification.permission,
+            } as PermissionStatus)
+          : originalQuery(parameters);
+
+      // Hide the "HeadlessChrome" from the user agent hints API
+      if ("userAgentData" in navigator) {
+        Object.defineProperty(navigator, "userAgentData", {
+          get: () => ({
+            brands: [
+              { brand: "Google Chrome", version: "131" },
+              { brand: "Chromium", version: "131" },
+              { brand: "Not_A Brand", version: "24" },
+            ],
+            mobile: false,
+            platform: "macOS",
+          }),
+        });
+      }
     });
 
     if (options?.timeout) {
@@ -286,10 +403,14 @@ export class BrowserManager {
     }
     this.managedPages.clear();
 
-    // Disconnect default browser
+    // Disconnect (or close if headless) default browser
     if (this.browser) {
       try {
-        this.browser.disconnect();
+        if (this.config.headless) {
+          await this.browser.close();
+        } else {
+          this.browser.disconnect();
+        }
       } catch {
         // Ignore
       }

@@ -10,6 +10,10 @@ export interface Config {
   sessionTimeoutMinutes: number;
   /** Named Chrome profiles mapping profile name → CDP URL. */
   profiles: Record<string, string>;
+  /** Run Chrome in headless mode (auto-launched, stays in background). */
+  headless: boolean;
+  /** Custom Chrome executable path (auto-detected if not set). */
+  chromePath: string;
 }
 
 const VALID_SEARCH_ENGINES = ["google", "duckduckgo"] as const;
@@ -59,6 +63,8 @@ export function getConfig(): Config {
     logLevel: parseEnum(process.env.LOG_LEVEL, VALID_LOG_LEVELS, "info"),
     sessionTimeoutMinutes: parseIntSafe(process.env.SESSION_TIMEOUT_MINUTES, 30),
     profiles: parseProfiles(process.env.CHROME_PROFILES),
+    headless: process.env.CHROME_HEADLESS === "true",
+    chromePath: process.env.CHROME_PATH ?? "",
   };
 }
 

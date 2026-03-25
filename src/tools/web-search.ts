@@ -83,6 +83,20 @@ async function searchGoogle(
         return items;
       }, maxResults);
 
+      // Detect CAPTCHA / blocked page — trigger fallback
+      if (results.length === 0) {
+        const isCaptcha = await page.evaluate(() => {
+          const body = document.body?.innerText?.slice(0, 1000).toLowerCase() ?? "";
+          if (document.querySelector("#captcha-form, #recaptcha, .g-recaptcha")) return true;
+          if (body.includes("unusual traffic") || body.includes("automated requests")) return true;
+          if (body.includes("trafic inhabituel") || body.includes("requêtes automatisées")) return true;
+          return false;
+        });
+        if (isCaptcha) {
+          throw new Error("Google CAPTCHA detected");
+        }
+      }
+
       logger.info(`Google search: "${query}" → ${results.length} results`);
       return results;
     },
