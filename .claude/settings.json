@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "browser-proxy": {
-      "command": "node",
-      "args": ["/Users/apple/MCP/Browser MCP Proxy/dist/index.js"]
-    }
-  }
-}

